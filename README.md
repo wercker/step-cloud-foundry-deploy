@@ -1,9 +1,11 @@
 # cloud-foundry-deploy
 
-Deploys the current path to a Cloud Foundry instance.
+Deploys the current path to a Cloud Foundry instance. Current version of cf:
+6.10.0.
 
 # What's new
 
+- Fix cf on version 6.10.0
 - Blue-Green Deploys.
 - Support for hosted Cloud Foundry instances.
 
@@ -42,3 +44,11 @@ deploy:
 # License
 
 The MIT License (MIT)
+
+# Changelog
+
+## 1.0.0
+
+- Fix cf on version 6.10.0
+- Blue-Green Deploys.
+- Support for hosted Cloud Foundry instances.
