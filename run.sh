@@ -1,15 +1,17 @@
+#!/bin/bash
+
 simple_deploy() {
   set -e;
   local appname="$1";
   local domain="$2";
 
-  local push_cmd="./cf push $appname";
+  local push_cmd="$WERCKER_STEP_ROOT/cf push $appname";
 
   if [ -n "$domain" ]; then
     push_cmd="$push_cmd -d $domain";
   fi;
 
-  eval $push_cmd;
+  eval "$push_cmd";
 }
 
 blue_green_deploy() {
@@ -17,7 +19,7 @@ blue_green_deploy() {
   local alt_appname="$2";
   local route="$3";
 
-  if $(./cf app $appname | grep -q started); then
+  if "$WERCKER_STEP_ROOT"/cf app "$appname" | grep -q started; then
     OLD="$appname";
     NEW="$alt_appname";
   else
@@ -26,16 +28,16 @@ blue_green_deploy() {
   fi
 
   info "Pushing new app to $NEW and disabling $OLD"
-  ./cf push $NEW
+  "$WERCKER_STEP_ROOT"/cf push "$NEW"
   if [[ $? -ne 0 ]]; then
-    ./cf stop $NEW;
+    "$WERCKER_STEP_ROOT"/cf stop "$NEW";
     fail "Error pushing app";
   fi
 
   info "Re-routing"
-  ./cf map-route $NEW $route
-  ./cf unmap-route $OLD $route
-  ./cf stop $OLD
+  "$WERCKER_STEP_ROOT"/cf map-route "$NEW" "$route"
+  "$WERCKER_STEP_ROOT"/cf unmap-route "$OLD" "$route"
+  "$WERCKER_STEP_ROOT"/cf stop "$OLD"
 }
 
 main() {
@@ -64,12 +66,8 @@ main() {
     info "api not specified; using https://api.run.pivotal.io";
   fi
 
-  info "Downloading CF CLI";
-  wget -O cf.tgz "https://cli.run.pivotal.io/stable?release=linux64-binary";
-  tar -zxf cf.tgz;
-
   info "Logging in to CF API";
-  local login_cmd="./cf login \
+  local login_cmd="$WERCKER_STEP_ROOT/cf login \
       -u \"$username\" \
       -p \"$password\" \
       -o \"$organization\" \
@@ -79,7 +77,7 @@ main() {
   if [ -n "$skip_ssl" ]; then
     login_cmd="$login_cmd --skip-ssl-validation";
   fi
-  eval $login_cmd;
+  eval "$login_cmd";
 
   if [ -n "$alt_appname" ]; then
     info "Doing Blue-green deploy with $appname and $alt_appname";

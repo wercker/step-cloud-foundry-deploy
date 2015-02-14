@@ -1,0 +1,29 @@
+box: wercker/default
+
+build:
+    steps:
+        - shellcheck:
+            files: run.sh
+
+        - script:
+            name: set version
+            code: |
+                export CLOUDFOUNDRY_VERSION="6.10.0"
+                echo "Installing version $CLOUDFOUNDRY_VERSION of cf cli"
+
+        - script:
+            name: download cf
+            code: |
+                curl -L "https://cli.run.pivotal.io/stable?release=linux64-binary&version=$CLOUDFOUNDRY_VERSION" > /tmp/cf.tgz
+                mkdir /tmp/cf/
+                tar xzvf /tmp/cf.tgz -C /tmp/cf/
+
+        - script:
+            name: prepare output
+            code: |
+                mv /tmp/cf/cf $WERCKER_ROOT/cf
+                rm -rf $WERCKER_ROOT/.git $WERCKER_ROOT/.gitignore
+
+        - script:
+            name: version
+            code: $WERCKER_ROOT/cf --version
